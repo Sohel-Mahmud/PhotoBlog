@@ -1,12 +1,15 @@
 package com.devlearn.sohel.photoblog;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.nfc.Tag;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,6 +29,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 public class MainActivity extends AppCompatActivity {
@@ -67,6 +72,15 @@ public class MainActivity extends AppCompatActivity {
                 holder.setDesc(model.getDesc());
                 holder.setTitle(model.getTitle());
                 holder.setImage(model.getImage());
+                holder.setUsername(model.getUsername());
+
+                //applying onclick on whole element
+                holder.mView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(MainActivity.this, "You clicked a View", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
 
             @NonNull
@@ -111,12 +125,20 @@ public class MainActivity extends AppCompatActivity {
         TextView _title;
         TextView _desc;
         ImageView _image;
+        TextView postUsername;
+        View mView;
 
-        BlogViewHolder(View mView){
-            super(mView);
+        BlogViewHolder(View itemView){
+            super(itemView);
+            mView = itemView;
             _title = mView.findViewById(R.id.post_title);
-            _desc = mView.findViewById(R.id.post_text);
-            _image = mView.findViewById(R.id.post_image);
+            //for applying onclick on sigle element
+            _title.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.v("Mainactivity","some text");
+                }
+            });
 
         }
 
@@ -127,12 +149,32 @@ public class MainActivity extends AppCompatActivity {
 
         public void setDesc(String desc)
         {
+            _desc = mView.findViewById(R.id.post_text);
+
             _desc.setText(desc);
         }
 
-        public void setImage(String image)
+        public void setImage(final String image)
         {
-            Picasso.get().load(image).into(_image);
+
+            _image = mView.findViewById(R.id.post_image);
+            Picasso.get().load(image).networkPolicy(NetworkPolicy.OFFLINE).into(_image, new Callback() {
+                @Override
+                public void onSuccess() {
+
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Picasso.get().load(image).into(_image);
+                }
+            });
+        }
+
+        public void setUsername(String username)
+        {
+            postUsername = mView.findViewById(R.id.postUsername);
+            postUsername.setText(username);
         }
 
     }
